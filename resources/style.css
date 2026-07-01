@@ -1,0 +1,260 @@
+/* ===================================================== */
+/* Yggdrasil — тёмная геймерская тема с красными акцентами */
+/* ===================================================== */
+
+/* ===== Базовая палитра ===== */
+window {
+    background-color: #0d0d10;
+    color: #e8e8ea;
+}
+
+/* ===== Затемняющая панель поверх фонового изображения ===== */
+.dim-overlay {
+    background-color: rgba(8, 6, 8, 0.65);
+}
+
+/* ===== Строка поиска ===== */
+searchentry {
+    background-color: rgba(20, 18, 20, 0.85);
+    border: 1px solid rgba(180, 40, 50, 0.35);
+    border-radius: 10px;
+    color: #e8e8ea;
+    padding: 6px 10px;
+    caret-color: #d84654;
+}
+
+searchentry:focus-within {
+    border: 1px solid rgba(216, 70, 84, 0.75);
+    box-shadow: 0 0 0 2px rgba(216, 70, 84, 0.15);
+}
+
+searchentry image {
+    color: rgba(216, 70, 84, 0.7);
+}
+
+/* ===== Плоские кнопки (настройки, категории и т.д. базовый hover) ===== */
+button.flat {
+    background-color: transparent;
+    border-radius: 8px;
+    transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+button.flat image {
+    color: #e8e8ea;
+    -gtk-icon-filter: none;
+}
+
+button.flat:hover {
+    background-color: rgba(180, 40, 50, 0.12);
+}
+
+button.flat:hover image {
+    color: #f0f0f2;
+}
+
+button.flat:active {
+    background-color: rgba(180, 40, 50, 0.22);
+}
+
+/* ===== Карточки приложений ===== */
+.app-tile {
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background-color: rgba(24, 20, 22, 0.5);
+    transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.app-tile:hover {
+    background-color: rgba(180, 40, 50, 0.14);
+    border: 1px solid rgba(180, 40, 50, 0.4);
+    box-shadow: 0 0 8px rgba(180, 40, 50, 0.15);
+}
+
+.app-tile:active {
+    background-color: rgba(180, 40, 50, 0.24);
+}
+
+.app-tile label {
+    color: #d4d4d8;
+    font-size: 11px;
+}
+
+/* ===== Панель категорий ===== */
+.category-button {
+    border-radius: 8px;
+    padding: 4px 14px;
+    background-color: rgba(24, 20, 22, 0.4);
+    border: 1px solid rgba(180, 40, 50, 0.2);
+    color: #c8c8cc;
+    transition: all 150ms ease;
+}
+
+.category-button:hover {
+    background-color: rgba(180, 40, 50, 0.18);
+    border: 1px solid rgba(180, 40, 50, 0.5);
+    color: #f0f0f2;
+}
+
+.category-button:checked {
+    background-color: rgba(180, 40, 50, 0.28);
+    border: 1px solid rgba(216, 70, 84, 0.7);
+    color: #ffffff;
+}
+
+/* ===== Панель закреплённых приложений ===== */
+.pinned-icon {
+    border-radius: 8px;
+    background-color: rgba(24, 20, 22, 0.35);
+    border: 1px solid rgba(180, 40, 50, 0.15);
+    transition: all 150ms ease;
+}
+
+.pinned-icon:hover {
+    background-color: rgba(180, 40, 50, 0.16);
+    border: 1px solid rgba(180, 40, 50, 0.45);
+}
+
+/* ===== Разделители — тонкая красная линия вместо серой ===== */
+separator {
+    background-color: rgba(180, 40, 50, 0.25);
+    min-height: 1px;
+    min-width: 1px;
+}
+
+/* ===== Скроллбары ===== */
+scrollbar {
+    background-color: transparent;
+}
+
+scrollbar slider {
+    background-color: rgba(180, 40, 50, 0.35);
+    border-radius: 6px;
+    min-width: 6px;
+    min-height: 6px;
+}
+
+scrollbar slider:hover {
+    background-color: rgba(180, 40, 50, 0.55);
+}
+
+/* ===== Диалоговые окна (Add category, category checkboxes, rename и т.д.) ===== */
+window.dialog,
+window:not(.background) {
+    background-color: #131316;
+}
+
+entry {
+    background-color: rgba(20, 18, 20, 0.9);
+    border: 1px solid rgba(180, 40, 50, 0.3);
+    border-radius: 8px;
+    color: #e8e8ea;
+    padding: 6px 10px;
+    caret-color: #d84654;
+}
+
+entry:focus {
+    border: 1px solid rgba(216, 70, 84, 0.7);
+}
+
+button.suggested-action {
+    background-color: rgba(180, 40, 50, 0.85);
+    color: #ffffff;
+    border-radius: 8px;
+    border: none;
+}
+
+button.suggested-action:hover {
+    background-color: rgba(200, 50, 62, 0.95);
+}
+
+checkbutton check {
+    border-radius: 4px;
+    border: 1px solid rgba(180, 40, 50, 0.5);
+    background-color: rgba(20, 18, 20, 0.6);
+}
+
+checkbutton check:checked {
+    background-color: rgba(180, 40, 50, 0.9);
+    border: 1px solid rgba(216, 70, 84, 0.9);
+}
+
+/* ===== Popover меню (ПКМ на карточках, категориях, пинах) ===== */
+popover {
+    background-color: #17171a;
+    border: 1px solid rgba(180, 40, 50, 0.3);
+    border-radius: 10px;
+    padding: 4px;
+}
+
+popover contents {
+    background-color: transparent;
+}
+
+popover button {
+    background-color: transparent;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #e8e8ea;
+}
+
+popover button:hover {
+    background-color: rgba(180, 40, 50, 0.2);
+}
+
+popover modelbutton {
+    background-color: transparent;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #e8e8ea;
+}
+
+popover modelbutton:hover {
+    background-color: rgba(180, 40, 50, 0.2);
+}
+
+popover separator {
+    background-color: rgba(180, 40, 50, 0.15);
+}
+
+/* Убираем стрелки/индикаторы у пунктов меню */
+popover arrow {
+    background: none;
+    box-shadow: none;
+    -gtk-icon-source: none;
+}
+
+popover modelbutton arrow,
+popover modelbutton check,
+popover modelbutton radio {
+    -gtk-icon-source: none;
+    background: none;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* ===== Tooltip ===== */
+tooltip {
+    background-color: #17171a;
+    border: 1px solid rgba(180, 40, 50, 0.35);
+    color: #e8e8ea;
+    border-radius: 6px;
+}
+
+/* ===== ListBox (используется в списке категорий с чекбоксами) ===== */
+list {
+    background-color: transparent;
+}
+
+list row {
+    background-color: rgba(24, 20, 22, 0.4);
+    border-radius: 6px;
+    margin: 2px 0;
+}
+
+list row:hover {
+    background-color: rgba(180, 40, 50, 0.14);
+}
+
+list row:selected {
+    background-color: rgba(180, 40, 50, 0.28);
+}

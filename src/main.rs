@@ -3,6 +3,7 @@ mod apps_db;
 
 use gtk4::prelude::*;
 use gtk4::Application;
+use std::rc::Rc;
 
 const APP_ID: &str = "com.example.MainLauncher";
 
@@ -13,17 +14,23 @@ fn main() {
 }
 
 fn build_ui(app: &Application) {
-    // 1. Открываем (или создаём) БД
-    let db = apps_db::AppsDb::open().expect("не удалось открыть БД");
+    load_css();
 
-    // 2. Сканируем систему и добавляем новые приложения
+    let db = Rc::new(apps_db::AppsDb::open().expect("не удалось открыть БД"));
     db.sync_with_system().expect("ошибка синхронизации БД");
 
-    // 3. Выводим всю БД в консоль
-    db.print_all().expect("ошибка чтения БД");
-
-    // 4. Запускаем графическую часть
     let window = window::MainWindow::new(app);
     window.populate_apps(&db);
     window.present();
+}
+
+fn load_css() {
+    let provider = gtk4::CssProvider::new();
+    provider.load_from_path("resources/style.css");
+
+    gtk4::style_context_add_provider_for_display(
+        &gtk4::gdk::Display::default().expect("нет дисплея"),
+        &provider,
+        gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
 }
