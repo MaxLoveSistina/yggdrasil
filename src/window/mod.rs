@@ -1,9 +1,19 @@
 mod imp;
+mod app_card;
+pub mod categories;
+mod pinned;
+mod add_to_category;
+mod background;
+mod dialog_utils;
 
 use gtk4::prelude::*;
 use gtk4::glib;
 use gtk4::subclass::prelude::*;
 use gtk4::{gio, Application};
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use crate::apps_db::AppsDb;
 
 glib::wrapper! {
     pub struct MainWindow(ObjectSubclass<imp::MainWindow>)
@@ -18,97 +28,113 @@ impl MainWindow {
         glib::Object::builder().property("application", app).build()
     }
 
-    pub fn populate_apps(&self, db: &crate::apps_db::AppsDb) {
-        let imp = self.imp();
-        let apps = gio::AppInfo::all();
+    pub fn populate_apps(&self, db: &Rc<AppsDb>) {
+        let current_category: Rc<RefCell<String>> = Rc::new(RefCell::new("All".to_string()));
 
-        for app in apps {
+        background::load_saved(self);
+        self.setup_escape_close();
+
+        self.rebuild_apps(db);
+        self.rebuild_pinned(db);
+        categories::populate(self, db, current_category.clone());
+        self.setup_filter(current_category, db.clone());
+        self.setup_settings_button();
+    }
+
+    fn setup_escape_close(&self) {
+        let controller = gtk4::EventControllerKey::new();
+        let window_clone = self.clone();
+
+        controller.connect_key_pressed(move |_, key, _, _| {
+            if key == gtk4::gdk::Key::Escape {
+                window_clone.close();
+                gtk4::glib::Propagation::Stop
+            } else {
+                gtk4::glib::Propagation::Proceed
+            }
+        });
+
+        self.add_controller(controller);
+    }
+
+    pub fn rebuild_apps(&self, db: &Rc<AppsDb>) {
+        let imp = self.imp();
+
+        while let Some(child) = imp.app_grid.first_child() {
+            imp.app_grid.remove(&child);
+        }
+
+        for app in gio::AppInfo::all() {
             let id = match app.id() {
                 Some(id) => id.to_string(),
                 None => continue,
             };
 
-            // скрываем твои hidden
-            if db.is_hidden(&id) {
-                continue;
-            }
-
-            // скрываем системные/служебные .desktop файлы
-            // should_show() учитывает NoDisplay=true, Hidden=true,
-            // OnlyShowIn/NotShowIn относительно текущего DE
             if !app.should_show() {
                 continue;
             }
 
-            let name = app.display_name();
+            let hidden = db.is_hidden(&id);
+            let card = app_card::build(&app, db, self);
+            card.set_widget_name(&format!(
+                "{}|{}|{}",
+                app.display_name().to_lowercase(),
+                hidden,
+                id
+            ));
 
-            let image = gtk4::Image::new();
-            image.set_pixel_size(48);
-
-            if let Some(icon) = app.icon() {
-                image.set_from_gicon(&icon);
-            } else {
-                image.set_icon_name(Some("application-x-executable"));
-            }
-
-            let label = gtk4::Label::new(Some(&name));
-            label.set_ellipsize(gtk4::pango::EllipsizeMode::End);
-            label.set_max_width_chars(12);
-            label.set_lines(2);
-            label.set_wrap(true);
-            label.set_justify(gtk4::Justification::Center);
-
-            let content = gtk4::Box::new(gtk4::Orientation::Vertical, 4);
-            content.append(&image);
-            content.append(&label);
-
-            let button = gtk4::Button::new();
-            button.set_child(Some(&content));
-            button.add_css_class("flat");
-            button.set_width_request(80);
-            button.set_height_request(80);
-
-            // запуск приложения по клику
-            let app_clone = app.clone();
-            button.connect_clicked(move |_| {
-                let context = gio::AppLaunchContext::NONE;
-                if let Err(e) = app_clone.launch(&[], context) {
-                    eprintln!("Не удалось запустить приложение: {}", e);
-                }
-            });
-
-            // FlowBoxChild создаём вручную, чтобы прицепить к нему имя
-            // приложения как "search key" через widget-name для фильтра
-            let flow_child = gtk4::FlowBoxChild::new();
-            flow_child.set_child(Some(&button));
-            flow_child.set_widget_name(&name.to_lowercase());
-
-            imp.app_grid.append(&flow_child);
+            imp.app_grid.append(&card);
         }
 
-        self.setup_search();
+        imp.app_grid.invalidate_filter();
     }
 
-    fn setup_search(&self) {
+    pub fn rebuild_pinned(&self, db: &Rc<AppsDb>) {
+        pinned::rebuild(self, db);
+    }
+
+    fn setup_filter(&self, current_category: Rc<RefCell<String>>, db: Rc<AppsDb>) {
         let imp = self.imp();
 
-        // фильтр-функция: показываем только те карточки,
-        // чьё имя (widget_name) содержит текст поиска
         let search_entry = imp.search_entry.clone();
-        let app_grid = imp.app_grid.clone();
+        let category_for_filter = current_category.clone();
+        let db_for_filter = db.clone();
 
         imp.app_grid.set_filter_func(move |child| {
+            let widget_name = child.widget_name();
+            let mut parts = widget_name.splitn(3, '|');
+            let name = parts.next().unwrap_or_default();
+            let hidden = parts.next().unwrap_or("false") == "true";
+
             let query = search_entry.text().to_lowercase();
-            if query.is_empty() {
-                return true;
+            if !query.is_empty() && !name.contains(&query.as_str()) {
+                return false;
             }
-            child.widget_name().to_lowercase().contains(&query)
+
+            let category = category_for_filter.borrow();
+            match category.as_str() {
+                "All" => !hidden,
+                "Hidden" => hidden,
+                other => {
+                    let app_id = parts.next().unwrap_or_default();
+                    !hidden && db_for_filter.app_in_category(app_id, other)
+                }
+            }
         });
 
-        // при изменении текста — пересчитываем фильтр
-        let app_grid_for_signal = app_grid.clone();
+        let app_grid = imp.app_grid.clone();
         imp.search_entry.connect_search_changed(move |_| {
-            app_grid_for_signal.invalidate_filter();
+            app_grid.invalidate_filter();
+        });
+    }
+
+    fn setup_settings_button(&self) {
+        let imp = self.imp();
+        let button = imp.settings_button.clone();
+        let window_clone = self.clone();
+
+        imp.settings_button.connect_clicked(move |_| {
+            background::show_menu(&button, &window_clone);
         });
     }
 }

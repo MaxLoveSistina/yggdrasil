@@ -1,48 +1,101 @@
 using Gtk 4.0;
 
 template $MainWindow : Window {
-  title: "Launcher";
+  title: "Yggdrasil";
   default-width: 700;
-  default-height: 500;
+  default-height: 550;
 
-  Box {
-    orientation: vertical;
-    spacing: 8;
-    margin-top: 12;
-    margin-bottom: 12;
-    margin-start: 12;
-    margin-end: 12;
+  Overlay {
+    // Основной child — фон, он всегда самый нижний слой
+    Picture background_picture {
+      content-fit: cover;
+      can-shrink: true;
+      can-target: false;
+    }
 
+    // overlay 1 — затемнение поверх фона
+    [overlay]
+    Box dim_overlay {
+      can-target: false;
+
+      styles ["dim-overlay"]
+    }
+
+    // overlay 2 — весь интерфейс, самый верхний слой
+    [overlay]
     Box {
-      orientation: horizontal;
+      orientation: vertical;
       spacing: 8;
+      margin-top: 12;
+      margin-bottom: 12;
+      margin-start: 12;
+      margin-end: 12;
+
+      ScrolledWindow {
+        hscrollbar-policy: automatic;
+        vscrollbar-policy: never;
+        height-request: 64;
+
+        Box pinned_panel {
+          orientation: horizontal;
+          spacing: 8;
+        }
+      }
+
+      Separator {}
+
+      Box {
+      orientation: horizontal;
+      halign: center;
+      spacing: 10;
+      margin-top: 4;
+      margin-bottom: 4;
 
       SearchEntry search_entry {
-        hexpand: true;
+        width-request: 460;
         placeholder-text: "Поиск приложений...";
       }
 
       Button settings_button {
         icon-name: "open-menu-symbolic";
-        width-request: 36;
-        height-request: 36;
+        width-request: 38;
+        height-request: 38;
 
         styles ["flat"]
       }
     }
 
-    ScrolledWindow {
-      vexpand: true;
-      hscrollbar-policy: never;
+      ScrolledWindow {
+        vexpand: true;
+        hscrollbar-policy: never;
 
-      FlowBox app_grid {
-        valign: start;
-        max-children-per-line: 8;
-        min-children-per-line: 4;
-        row-spacing: 12;
-        column-spacing: 12;
-        homogeneous: true;
-        selection-mode: none;
+        FlowBox app_grid {
+          valign: start;
+          halign: fill;
+          max-children-per-line: 10;
+          min-children-per-line: 5;
+          row-spacing: 8;
+          column-spacing: 8;
+          margin-top: 8;
+          margin-bottom: 8;
+          margin-start: 4;
+          margin-end: 4;
+          homogeneous: true;
+          selection-mode: none;
+        }
+      }
+
+      Separator {}
+
+      ScrolledWindow {
+        hscrollbar-policy: automatic;
+        vscrollbar-policy: never;
+        height-request: 44;
+
+        Box categories_bar {
+          orientation: horizontal;
+          spacing: 6;
+        }
       }
     }
   }
