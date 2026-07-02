@@ -1,6 +1,8 @@
 use gtk4::glib;
 use gtk4::subclass::prelude::*;
 use gtk4::{CompositeTemplate, SearchEntry, Button, FlowBox, Box as GtkBox, Picture};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(CompositeTemplate, Default)]
 #[template(file = "../../ui/window.ui")]
@@ -19,6 +21,7 @@ pub struct MainWindow {
     pub background_picture: TemplateChild<Picture>,
     #[template_child]
     pub dim_overlay: TemplateChild<GtkBox>,
+    pub current_category: RefCell<Option<Rc<RefCell<String>>>>,
 }
 
 #[glib::object_subclass]

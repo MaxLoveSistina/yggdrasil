@@ -8,8 +8,8 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
   <requires lib="gtk" version="4.0"/>
   <template class="MainWindow" parent="GtkWindow">
     <property name="title">Yggdrasil</property>
-    <property name="default-width">700</property>
-    <property name="default-height">550</property>
+    <property name="default-width">1000</property>
+    <property name="default-height">700</property>
     <child>
       <object class="GtkOverlay">
         <child>
@@ -30,68 +30,42 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
         <child type="overlay">
           <object class="GtkBox">
             <property name="orientation">1</property>
-            <property name="spacing">8</property>
-            <property name="margin-top">12</property>
-            <property name="margin-bottom">12</property>
-            <property name="margin-start">12</property>
-            <property name="margin-end">12</property>
+            <property name="spacing">12</property>
+            <property name="margin-top">16</property>
+            <property name="margin-bottom">16</property>
+            <property name="margin-start">16</property>
+            <property name="margin-end">16</property>
+            <property name="hexpand">true</property>
+            <property name="vexpand">true</property>
             <child>
-              <object class="GtkScrolledWindow">
-                <property name="hscrollbar-policy">1</property>
-                <property name="vscrollbar-policy">2</property>
-                <property name="height-request">64</property>
-                <child>
-                  <object class="GtkBox" id="pinned_panel">
-                    <property name="orientation">0</property>
-                    <property name="spacing">8</property>
-                  </object>
-                </child>
+              <object class="GtkSearchEntry" id="search_entry">
+                <property name="width-request">320</property>
+                <property name="halign">1</property>
+                <property name="placeholder-text">Search apps...</property>
               </object>
             </child>
             <child>
-              <object class="GtkSeparator"></object>
-            </child>
-            <child>
-              <object class="GtkBox">
+              <object class="GtkBox" id="categories_bar">
                 <property name="orientation">0</property>
+                <property name="spacing">6</property>
                 <property name="halign">3</property>
-                <property name="spacing">10</property>
-                <property name="margin-top">4</property>
-                <property name="margin-bottom">4</property>
-                <child>
-                  <object class="GtkSearchEntry" id="search_entry">
-                    <property name="width-request">460</property>
-                    <property name="placeholder-text">Поиск приложений...</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="settings_button">
-                    <property name="icon-name">open-menu-symbolic</property>
-                    <property name="width-request">38</property>
-                    <property name="height-request">38</property>
-                    <style>
-                      <class name="flat"/>
-                    </style>
-                  </object>
-                </child>
+                <property name="height-request">40</property>
               </object>
             </child>
             <child>
               <object class="GtkScrolledWindow">
                 <property name="vexpand">true</property>
+                <property name="hexpand">true</property>
                 <property name="hscrollbar-policy">2</property>
                 <child>
                   <object class="GtkFlowBox" id="app_grid">
                     <property name="valign">1</property>
-                    <property name="halign">0</property>
+                    <property name="halign">3</property>
+                    <property name="margin-top">8</property>
                     <property name="max-children-per-line">10</property>
                     <property name="min-children-per-line">5</property>
-                    <property name="row-spacing">8</property>
-                    <property name="column-spacing">8</property>
-                    <property name="margin-top">8</property>
-                    <property name="margin-bottom">8</property>
-                    <property name="margin-start">4</property>
-                    <property name="margin-end">4</property>
+                    <property name="row-spacing">10</property>
+                    <property name="column-spacing">10</property>
                     <property name="homogeneous">true</property>
                     <property name="selection-mode">0</property>
                   </object>
@@ -99,21 +73,27 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
               </object>
             </child>
             <child>
-              <object class="GtkSeparator"></object>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow">
-                <property name="hscrollbar-policy">1</property>
-                <property name="vscrollbar-policy">2</property>
-                <property name="height-request">44</property>
-                <child>
-                  <object class="GtkBox" id="categories_bar">
-                    <property name="orientation">0</property>
-                    <property name="spacing">6</property>
-                  </object>
-                </child>
+              <object class="GtkBox" id="pinned_panel">
+                <property name="orientation">0</property>
+                <property name="spacing">8</property>
+                <property name="halign">3</property>
+                <property name="height-request">64</property>
               </object>
             </child>
+          </object>
+        </child>
+        <child type="overlay">
+          <object class="GtkButton" id="settings_button">
+            <property name="icon-name">open-menu-symbolic</property>
+            <property name="width-request">36</property>
+            <property name="height-request">36</property>
+            <property name="halign">2</property>
+            <property name="valign">1</property>
+            <property name="margin-top">16</property>
+            <property name="margin-end">16</property>
+            <style>
+              <class name="flat"/>
+            </style>
           </object>
         </child>
       </object>

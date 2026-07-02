@@ -41,9 +41,12 @@ pub fn build(app: &gio::AppInfo, db: &Rc<AppsDb>, window: &MainWindow) -> gtk4::
     button.set_height_request(72);
 
     let app_clone = app.clone();
+    let window_clone = window.clone();
     button.connect_clicked(move |_| {
         if let Err(e) = app_clone.launch(&[], gio::AppLaunchContext::NONE) {
             eprintln!("Не удалось запустить приложение: {}", e);
+        } else {
+            window_clone.close();
         }
     });
 
@@ -83,7 +86,7 @@ fn attach_context_menu(
         popover_for_destroy.unparent();
     });
 
-    let action_group = build_actions(app, app_id, app_name, db, window, is_hidden, is_pinned);
+    let action_group = build_actions(button, app, app_id, app_name, db, window, is_hidden, is_pinned);
     button.insert_action_group("app_card", Some(&action_group));
 
     let gesture = gtk4::GestureClick::new();
@@ -100,6 +103,7 @@ fn attach_context_menu(
 }
 
 fn build_actions(
+    button: &gtk4::Button,
     app: &gio::AppInfo,
     app_id: &str,
     app_name: &str,
@@ -112,11 +116,14 @@ fn build_actions(
 
     let app_launch = app.clone();
     let name_launch = app_name.to_string();
+    let window_launch = window.clone();
     let action_launch = gio::SimpleAction::new("launch", None);
     action_launch.connect_activate(move |_, _| {
         println!("[Меню] Launch: {}", name_launch);
         if let Err(e) = app_launch.launch(&[], gio::AppLaunchContext::NONE) {
             eprintln!("Не удалось запустить приложение: {}", e);
+        } else {
+            window_launch.close();
         }
     });
 
@@ -124,9 +131,10 @@ fn build_actions(
     let name_category = app_name.to_string();
     let db_category = db.clone();
     let window_category = window.clone();
+    let button_for_category = button.clone();
     let action_add_category = gio::SimpleAction::new("add_category", None);
     action_add_category.connect_activate(move |_, _| {
-        crate::window::add_to_category::show(&window_category, db_category.clone(), id_category.clone(), name_category.clone());
+        crate::window::add_to_category::show(&button_for_category, &window_category, db_category.clone(), id_category.clone(), name_category.clone());
     });
 
     let id_pin = app_id.to_string();

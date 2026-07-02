@@ -1,19 +1,19 @@
 /* ===================================================== */
-/* Yggdrasil — тёмная геймерская тема с красными акцентами */
+/* Yggdrasil — dark gamer theme with red accents */
 /* ===================================================== */
 
-/* ===== Базовая палитра ===== */
+/* ===== Base palette ===== */
 window {
     background-color: #0d0d10;
     color: #e8e8ea;
 }
 
-/* ===== Затемняющая панель поверх фонового изображения ===== */
+/* ===== Dimming overlay on top of background image ===== */
 .dim-overlay {
     background-color: rgba(8, 6, 8, 0.65);
 }
 
-/* ===== Строка поиска ===== */
+/* ===== Search entry ===== */
 searchentry {
     background-color: rgba(20, 18, 20, 0.85);
     border: 1px solid rgba(180, 40, 50, 0.35);
@@ -32,7 +32,7 @@ searchentry image {
     color: rgba(216, 70, 84, 0.7);
 }
 
-/* ===== Плоские кнопки (настройки, категории и т.д. базовый hover) ===== */
+/* ===== Flat buttons (settings, categories base hover) ===== */
 button.flat {
     background-color: transparent;
     border-radius: 8px;
@@ -56,7 +56,7 @@ button.flat:active {
     background-color: rgba(180, 40, 50, 0.22);
 }
 
-/* ===== Карточки приложений ===== */
+/* ===== App tiles ===== */
 .app-tile {
     border-radius: 12px;
     border: 1px solid transparent;
@@ -79,7 +79,7 @@ button.flat:active {
     font-size: 11px;
 }
 
-/* ===== Панель категорий ===== */
+/* ===== Categories bar ===== */
 .category-button {
     border-radius: 8px;
     padding: 4px 14px;
@@ -101,7 +101,7 @@ button.flat:active {
     color: #ffffff;
 }
 
-/* ===== Панель закреплённых приложений ===== */
+/* ===== Pinned apps panel ===== */
 .pinned-icon {
     border-radius: 8px;
     background-color: rgba(24, 20, 22, 0.35);
@@ -114,14 +114,14 @@ button.flat:active {
     border: 1px solid rgba(180, 40, 50, 0.45);
 }
 
-/* ===== Разделители — тонкая красная линия вместо серой ===== */
+/* ===== Separators — thin red line instead of gray ===== */
 separator {
     background-color: rgba(180, 40, 50, 0.25);
     min-height: 1px;
     min-width: 1px;
 }
 
-/* ===== Скроллбары ===== */
+/* ===== Scrollbars ===== */
 scrollbar {
     background-color: transparent;
 }
@@ -137,12 +137,7 @@ scrollbar slider:hover {
     background-color: rgba(180, 40, 50, 0.55);
 }
 
-/* ===== Диалоговые окна (Add category, category checkboxes, rename и т.д.) ===== */
-window.dialog,
-window:not(.background) {
-    background-color: #131316;
-}
-
+/* ===== Entries (used inside popovers) ===== */
 entry {
     background-color: rgba(20, 18, 20, 0.9);
     border: 1px solid rgba(180, 40, 50, 0.3);
@@ -156,6 +151,7 @@ entry:focus {
     border: 1px solid rgba(216, 70, 84, 0.7);
 }
 
+/* ===== Suggested action buttons (Save, Create, Add) ===== */
 button.suggested-action {
     background-color: rgba(180, 40, 50, 0.85);
     color: #ffffff;
@@ -167,6 +163,26 @@ button.suggested-action:hover {
     background-color: rgba(200, 50, 62, 0.95);
 }
 
+/* ===== Regular dialog buttons (Cancel etc.) ===== */
+.dialog-button {
+    background-color: rgba(40, 36, 38, 0.7);
+    border: 1px solid rgba(180, 40, 50, 0.25);
+    border-radius: 8px;
+    color: #d4d4d8;
+    transition: all 150ms ease;
+}
+
+.dialog-button:hover {
+    background-color: rgba(180, 40, 50, 0.15);
+    border: 1px solid rgba(180, 40, 50, 0.5);
+    color: #f0f0f2;
+}
+
+.dialog-button:active {
+    background-color: rgba(180, 40, 50, 0.25);
+}
+
+/* ===== Checkbuttons (category multi-select) ===== */
 checkbutton check {
     border-radius: 4px;
     border: 1px solid rgba(180, 40, 50, 0.5);
@@ -178,7 +194,8 @@ checkbutton check:checked {
     border: 1px solid rgba(216, 70, 84, 0.9);
 }
 
-/* ===== Popover меню (ПКМ на карточках, категориях, пинах) ===== */
+/* ===== Popover menus and popover dialogs ===== */
+/* ===== Popover menus and popover dialogs — усиленные селекторы ===== */
 popover {
     background-color: #17171a;
     border: 1px solid rgba(180, 40, 50, 0.3);
@@ -186,37 +203,103 @@ popover {
     padding: 4px;
 }
 
-popover contents {
-    background-color: transparent;
+popover > contents,
+popover > arrow {
+    background-color: #17171a;
+    background-image: none;
+}
+
+/* Обычные Button внутри popover (Cancel, Save, Add, +) */
+popover button,
+popover button.dialog-button,
+popover button.suggested-action,
+popover button.flat {
+    background-image: none;
 }
 
 popover button {
-    background-color: transparent;
-    border-radius: 6px;
-    padding: 8px 12px;
+    background-color: rgba(40, 36, 38, 0.7);
     color: #e8e8ea;
+    border: 1px solid rgba(180, 40, 50, 0.25);
+    border-radius: 8px;
 }
 
 popover button:hover {
     background-color: rgba(180, 40, 50, 0.2);
+    color: #f0f0f2;
 }
 
+popover button.suggested-action {
+    background-color: rgba(180, 40, 50, 0.85);
+    color: #ffffff;
+    border: none;
+}
+
+popover button.suggested-action:hover {
+    background-color: rgba(200, 50, 62, 0.95);
+}
+
+/* Пункты ПКМ-меню (Launch, Pin, Hide и т.д. — GtkModelButton) */
 popover modelbutton {
     background-color: transparent;
+    background-image: none;
+    color: #e8e8ea;
     border-radius: 6px;
     padding: 8px 12px;
-    color: #e8e8ea;
 }
 
 popover modelbutton:hover {
     background-color: rgba(180, 40, 50, 0.2);
+    color: #f0f0f2;
+}
+
+popover modelbutton label {
+    color: inherit;
 }
 
 popover separator {
     background-color: rgba(180, 40, 50, 0.15);
 }
 
-/* Убираем стрелки/индикаторы у пунктов меню */
+popover label {
+    color: #e8e8ea;
+}
+
+.popover-title {
+    font-weight: bold;
+    color: #f0f0f2;
+    margin-bottom: 4px;
+}
+
+/* Entry внутри popover */
+popover entry {
+    background-color: rgba(20, 18, 20, 0.9);
+    border: 1px solid rgba(180, 40, 50, 0.3);
+    border-radius: 8px;
+    color: #e8e8ea;
+}
+
+popover entry:focus {
+    border: 1px solid rgba(216, 70, 84, 0.7);
+}
+
+/* Checkbutton внутри popover */
+popover checkbutton {
+    color: #e8e8ea;
+}
+
+popover checkbutton check {
+    border-radius: 4px;
+    border: 1px solid rgba(180, 40, 50, 0.5);
+    background-color: rgba(20, 18, 20, 0.6);
+}
+
+popover checkbutton check:checked {
+    background-color: rgba(180, 40, 50, 0.9);
+    border: 1px solid rgba(216, 70, 84, 0.9);
+}
+
+/* Убираем стрелки/индикаторы подменю */
 popover arrow {
     background: none;
     box-shadow: none;
@@ -240,7 +323,7 @@ tooltip {
     border-radius: 6px;
 }
 
-/* ===== ListBox (используется в списке категорий с чекбоксами) ===== */
+/* ===== ListBox (if used anywhere) ===== */
 list {
     background-color: transparent;
 }
