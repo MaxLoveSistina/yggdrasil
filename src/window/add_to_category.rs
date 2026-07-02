@@ -5,21 +5,27 @@ use std::rc::Rc;
 use crate::apps_db::AppsDb;
 use crate::window::MainWindow;
 
-/// Показывает диалог: чекбоксы существующих категорий + Сохранить / Создать новую категорию
-pub fn show(parent: &MainWindow, db: Rc<AppsDb>, app_id: String, app_name: String) {
-    let dialog = gtk4::Window::builder()
-        .transient_for(parent)
-        .modal(true)
-        .title(&format!("Категории для «{}»", app_name))
-        .default_width(300)
-        .default_height(300)
-        .build();
+/// Показывает popover: чекбоксы существующих категорий + Сохранить / Создать новую
+pub fn show(parent_button: &gtk4::Button, window: &MainWindow, db: Rc<AppsDb>, app_id: String, app_name: String) {
+    let popover = gtk4::Popover::new();
+    popover.set_parent(parent_button);
+    popover.set_position(gtk4::PositionType::Right);
+
+    let popover_for_destroy = popover.clone();
+    parent_button.connect_destroy(move |_| {
+        popover_for_destroy.unparent();
+    });
 
     let content = gtk4::Box::new(gtk4::Orientation::Vertical, 8);
-    content.set_margin_top(16);
-    content.set_margin_bottom(16);
-    content.set_margin_start(16);
-    content.set_margin_end(16);
+    content.set_margin_top(12);
+    content.set_margin_bottom(12);
+    content.set_margin_start(12);
+    content.set_margin_end(12);
+    content.set_width_request(220);
+
+    let title = gtk4::Label::new(Some(&format!("Categories for «{}»", app_name)));
+    title.add_css_class("popover-title");
+    content.append(&title);
 
     let categories = db.all_categories().unwrap_or_default();
     let dynamic: Vec<_> = categories.into_iter().filter(|c| !c.is_static).collect();
@@ -28,24 +34,17 @@ pub fn show(parent: &MainWindow, db: Rc<AppsDb>, app_id: String, app_name: Strin
     let checkboxes: Rc<RefCell<Vec<(String, gtk4::CheckButton)>>> = Rc::new(RefCell::new(Vec::new()));
 
     if dynamic.is_empty() {
-        let placeholder = gtk4::Label::new(Some("Пока нет категорий"));
-        placeholder.set_margin_top(8);
-        placeholder.set_margin_bottom(8);
+        let placeholder = gtk4::Label::new(Some("No categories yet"));
+        placeholder.set_margin_top(4);
+        placeholder.set_margin_bottom(4);
         content.append(&placeholder);
     } else {
-        let list_box = gtk4::Box::new(gtk4::Orientation::Vertical, 4);
-
         for category in &dynamic {
             let check = gtk4::CheckButton::with_label(&category.name);
             check.set_active(already_in.contains(&category.name));
-            list_box.append(&check);
+            content.append(&check);
             checkboxes.borrow_mut().push((category.name.clone(), check));
         }
-
-        let scroller = gtk4::ScrolledWindow::new();
-        scroller.set_vexpand(true);
-        scroller.set_child(Some(&list_box));
-        content.append(&scroller);
     }
 
     let separator = gtk4::Separator::new(gtk4::Orientation::Horizontal);
@@ -57,100 +56,107 @@ pub fn show(parent: &MainWindow, db: Rc<AppsDb>, app_id: String, app_name: Strin
     create_btn.add_css_class("dialog-button");
     create_btn.set_width_request(36);
     create_btn.set_height_request(36);
-    create_btn.set_tooltip_text(Some("Создать новую категорию"));
+    create_btn.set_tooltip_text(Some("Create new category"));
 
-    let save_btn = gtk4::Button::with_label("Сохранить");
+    let save_btn = gtk4::Button::with_label("Save");
     save_btn.add_css_class("suggested-action");
     save_btn.set_hexpand(true);
 
     buttons_row.append(&save_btn);
     buttons_row.append(&create_btn);
-
     content.append(&buttons_row);
 
-    dialog.set_child(Some(&content));
-    
-    crate::window::dialog_utils::close_on_escape(&dialog);
+    popover.set_child(Some(&content));
 
     let db_for_save = db.clone();
     let app_id_for_save = app_id.clone();
-    let dialog_for_save = dialog.clone();
+    let popover_for_save = popover.clone();
     let checkboxes_for_save = checkboxes.clone();
     save_btn.connect_clicked(move |_| {
         for (name, check) in checkboxes_for_save.borrow().iter() {
             if check.is_active() {
                 if let Err(e) = db_for_save.add_app_to_category(&app_id_for_save, name) {
-                    eprintln!("Ошибка добавления в категорию «{}»: {}", name, e);
+                    eprintln!("Error adding to category «{}»: {}", name, e);
                 }
             } else {
                 if let Err(e) = db_for_save.remove_app_from_category(&app_id_for_save, name) {
-                    eprintln!("Ошибка удаления из категории «{}»: {}", name, e);
+                    eprintln!("Error removing from category «{}»: {}", name, e);
                 }
             }
         }
-        println!("Категории для «{}» сохранены", app_id_for_save);
-        dialog_for_save.close();
+        println!("Categories for «{}» saved", app_id_for_save);
+        popover_for_save.popdown();
     });
 
-    let parent_clone = parent.clone();
-    let dialog_clone = dialog.clone();
+    let window_clone = window.clone();
+    let parent_button_clone = parent_button.clone();
+    let popover_clone = popover.clone();
     let db_for_create = db.clone();
     let app_id_for_create = app_id.clone();
     let app_name_for_create = app_name.clone();
     create_btn.connect_clicked(move |_| {
-        dialog_clone.close();
-        show_create_category_dialog(
-            &parent_clone,
+        popover_clone.popdown();
+        show_create_category_popover(
+            &parent_button_clone,
+            &window_clone,
             db_for_create.clone(),
             app_id_for_create.clone(),
             app_name_for_create.clone(),
         );
     });
 
-    dialog.present();
+    popover.popup();
 }
 
-fn show_create_category_dialog(parent: &MainWindow, db: Rc<AppsDb>, app_id: String, app_name: String) {
-    let dialog = gtk4::Window::builder()
-        .transient_for(parent)
-        .modal(true)
-        .title("Новая категория")
-        .default_width(300)
-        .default_height(120)
-        .build();
+fn show_create_category_popover(
+    parent_button: &gtk4::Button,
+    window: &MainWindow,
+    db: Rc<AppsDb>,
+    app_id: String,
+    app_name: String,
+) {
+    let popover = gtk4::Popover::new();
+    popover.set_parent(parent_button);
+    popover.set_position(gtk4::PositionType::Right);
 
-    let content = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
-    content.set_margin_top(16);
-    content.set_margin_bottom(16);
-    content.set_margin_start(16);
-    content.set_margin_end(16);
+    let content = gtk4::Box::new(gtk4::Orientation::Vertical, 10);
+    content.set_margin_top(12);
+    content.set_margin_bottom(12);
+    content.set_margin_start(12);
+    content.set_margin_end(12);
+    content.set_width_request(220);
+
+    let title = gtk4::Label::new(Some("New category"));
+    title.add_css_class("popover-title");
+    content.append(&title);
 
     let entry = gtk4::Entry::new();
-    entry.set_placeholder_text(Some("Название категории"));
+    entry.set_placeholder_text(Some("Category name"));
     content.append(&entry);
 
     let buttons_row = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
     buttons_row.set_halign(gtk4::Align::End);
 
-    let cancel_btn = gtk4::Button::with_label("Отмена");
+    let cancel_btn = gtk4::Button::with_label("Cancel");
     cancel_btn.add_css_class("dialog-button");
-    let add_btn = gtk4::Button::with_label("Создать");
+    let add_btn = gtk4::Button::with_label("Create");
     add_btn.add_css_class("suggested-action");
 
     buttons_row.append(&cancel_btn);
     buttons_row.append(&add_btn);
     content.append(&buttons_row);
 
-    dialog.set_child(Some(&content));
+    popover.set_child(Some(&content));
 
-    let dialog_clone = dialog.clone();
+    let popover_for_cancel = popover.clone();
     cancel_btn.connect_clicked(move |_| {
-        dialog_clone.close();
+        popover_for_cancel.popdown();
     });
 
-    let dialog_clone = dialog.clone();
+    let popover_for_add = popover.clone();
     let entry_clone = entry.clone();
-    let parent_clone = parent.clone();
+    let window_clone = window.clone();
+    let parent_button_clone = parent_button.clone();
     let app_id_clone = app_id.clone();
     let app_name_clone = app_name.clone();
     add_btn.connect_clicked(move |_| {
@@ -158,23 +164,23 @@ fn show_create_category_dialog(parent: &MainWindow, db: Rc<AppsDb>, app_id: Stri
 
         match db.add_category(&name) {
             Ok(true) => {
-                println!("Категория создана: {}", name);
+                println!("Category created: {}", name);
 
                 crate::window::categories::populate(
-                    &parent_clone,
+                    &window_clone,
                     &db,
-                    Rc::new(RefCell::new("All".to_string())),
+                    window_clone.current_category(),
                 );
 
-                dialog_clone.close();
+                popover_for_add.popdown();
 
-                show(&parent_clone, db.clone(), app_id_clone.clone(), app_name_clone.clone());
+                show(&parent_button_clone, &window_clone, db.clone(), app_id_clone.clone(), app_name_clone.clone());
             }
             Ok(false) => {
-                println!("Категория уже существует или имя пустое: {}", name);
+                println!("Could not create category (empty name or already exists): {}", name);
             }
             Err(e) => {
-                eprintln!("Ошибка создания категории: {}", e);
+                eprintln!("Error creating category: {}", e);
             }
         }
     });
@@ -184,5 +190,5 @@ fn show_create_category_dialog(parent: &MainWindow, db: Rc<AppsDb>, app_id: Stri
         add_btn_clone.emit_clicked();
     });
 
-    dialog.present();
+    popover.popup();
 }

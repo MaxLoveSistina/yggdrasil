@@ -45,8 +45,9 @@ pub fn populate(window: &super::MainWindow, db: &Rc<AppsDb>, current_category: R
     let window_clone = window.clone();
     let db_clone = db.clone();
     let current_for_add = current_category.clone();
+    let add_btn_for_click = add_btn.clone();
     add_btn.connect_clicked(move |_| {
-        show_add_category_dialog(&window_clone, db_clone.clone(), current_for_add.clone());
+        show_add_category_dialog(&add_btn_for_click, &window_clone, db_clone.clone(), current_for_add.clone());
     });
 
     imp.categories_bar.append(&add_btn);
@@ -78,9 +79,10 @@ fn attach_category_menu(
     let db_rename = db.clone();
     let window_rename = window.clone();
     let current_rename = current_category.clone();
+    let btn_for_rename = btn.clone();
     let action_rename = gio::SimpleAction::new("rename", None);
     action_rename.connect_activate(move |_, _| {
-        show_rename_dialog(&window_rename, db_rename.clone(), name_rename.clone(), current_rename.clone());
+        show_rename_dialog(&btn_for_rename, &window_rename, db_rename.clone(), name_rename.clone(), current_rename.clone());
     });
 
     // Удалить
@@ -124,24 +126,21 @@ fn attach_category_menu(
 }
 
 fn show_rename_dialog(
+    parent_button: &gtk4::Button,
     parent: &super::MainWindow,
     db: Rc<AppsDb>,
     old_name: String,
     current_category: Rc<RefCell<String>>,
 ) {
-    let dialog = gtk4::Window::builder()
-        .transient_for(parent)
-        .modal(true)
-        .title("Переименовать категорию")
-        .default_width(300)
-        .default_height(120)
-        .build();
+    let popover = gtk4::Popover::new();
+    popover.set_parent(parent_button);
 
-    let content = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
-    content.set_margin_top(16);
-    content.set_margin_bottom(16);
-    content.set_margin_start(16);
-    content.set_margin_end(16);
+    let content = gtk4::Box::new(gtk4::Orientation::Vertical, 10);
+    content.set_margin_top(12);
+    content.set_margin_bottom(12);
+    content.set_margin_start(12);
+    content.set_margin_end(12);
+    content.set_width_request(220);
 
     let entry = gtk4::Entry::new();
     entry.set_text(&old_name);
@@ -150,24 +149,23 @@ fn show_rename_dialog(
     let buttons_row = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
     buttons_row.set_halign(gtk4::Align::End);
 
-    let cancel_btn = gtk4::Button::with_label("Отмена");
+    let cancel_btn = gtk4::Button::with_label("Cancel");
     cancel_btn.add_css_class("dialog-button");
-    let save_btn = gtk4::Button::with_label("Сохранить");
+    let save_btn = gtk4::Button::with_label("Save");
     save_btn.add_css_class("suggested-action");
 
     buttons_row.append(&cancel_btn);
     buttons_row.append(&save_btn);
     content.append(&buttons_row);
 
-    dialog.set_child(Some(&content));
+    popover.set_child(Some(&content));
 
-    let dialog_clone = dialog.clone();
-    crate::window::dialog_utils::close_on_escape(&dialog);
+    let popover_for_cancel = popover.clone();
     cancel_btn.connect_clicked(move |_| {
-        dialog_clone.close();
+        popover_for_cancel.popdown();
     });
 
-    let dialog_clone = dialog.clone();
+    let popover_for_save = popover.clone();
     let entry_clone = entry.clone();
     let parent_clone = parent.clone();
     let old_name_clone = old_name.clone();
@@ -176,20 +174,20 @@ fn show_rename_dialog(
 
         match db.rename_category(&old_name_clone, &new_name) {
             Ok(true) => {
-                println!("Категория переименована: {} -> {}", old_name_clone, new_name);
+                println!("Category renamed: {} -> {}", old_name_clone, new_name);
 
                 if *current_category.borrow() == old_name_clone {
                     *current_category.borrow_mut() = new_name.clone();
                 }
 
                 populate(&parent_clone, &db, current_category.clone());
-                dialog_clone.close();
+                popover_for_save.popdown();
             }
             Ok(false) => {
-                println!("Не удалось переименовать (пустое имя или конфликт): {}", new_name);
+                println!("Could not rename (empty or conflict): {}", new_name);
             }
             Err(e) => {
-                eprintln!("Ошибка переименования: {}", e);
+                eprintln!("Error renaming category: {}", e);
             }
         }
     });
@@ -199,67 +197,64 @@ fn show_rename_dialog(
         save_btn_clone.emit_clicked();
     });
 
-    dialog.present();
+    popover.popup();
 }
 
 fn show_add_category_dialog(
+    parent_button: &gtk4::Button,
     parent: &super::MainWindow,
     db: Rc<AppsDb>,
     current_category: Rc<RefCell<String>>,
 ) {
-    let dialog = gtk4::Window::builder()
-        .transient_for(parent)
-        .modal(true)
-        .title("Новая категория")
-        .default_width(300)
-        .default_height(120)
-        .build();
+    let popover = gtk4::Popover::new();
+    popover.set_parent(parent_button);
 
-    let content = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
-    content.set_margin_top(16);
-    content.set_margin_bottom(16);
-    content.set_margin_start(16);
-    content.set_margin_end(16);
+    let content = gtk4::Box::new(gtk4::Orientation::Vertical, 10);
+    content.set_margin_top(12);
+    content.set_margin_bottom(12);
+    content.set_margin_start(12);
+    content.set_margin_end(12);
+    content.set_width_request(220);
 
     let entry = gtk4::Entry::new();
-    entry.set_placeholder_text(Some("Название категории"));
+    entry.set_placeholder_text(Some("Category name"));
     content.append(&entry);
 
     let buttons_row = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
     buttons_row.set_halign(gtk4::Align::End);
 
-    let cancel_btn = gtk4::Button::with_label("Отмена");
+    let cancel_btn = gtk4::Button::with_label("Cancel");
     cancel_btn.add_css_class("dialog-button");
-    let add_btn = gtk4::Button::with_label("Добавить");
+    let add_btn = gtk4::Button::with_label("Add");
     add_btn.add_css_class("suggested-action");
 
     buttons_row.append(&cancel_btn);
     buttons_row.append(&add_btn);
     content.append(&buttons_row);
 
-    dialog.set_child(Some(&content));
+    popover.set_child(Some(&content));
 
-    let dialog_clone = dialog.clone();
+    let popover_for_cancel = popover.clone();
     cancel_btn.connect_clicked(move |_| {
-        dialog_clone.close();
+        popover_for_cancel.popdown();
     });
 
-    let dialog_clone = dialog.clone();
+    let popover_for_add = popover.clone();
     let parent_clone = parent.clone();
     let entry_clone = entry.clone();
     add_btn.connect_clicked(move |_| {
         let name = entry_clone.text().to_string();
         match db.add_category(&name) {
             Ok(true) => {
-                println!("Категория добавлена: {}", name);
+                println!("Category added: {}", name);
                 populate(&parent_clone, &db, current_category.clone());
-                dialog_clone.close();
+                popover_for_add.popdown();
             }
             Ok(false) => {
-                println!("Категория уже существует или имя пустое: {}", name);
+                println!("Category already exists or empty name: {}", name);
             }
             Err(e) => {
-                eprintln!("Ошибка добавления категории: {}", e);
+                eprintln!("Error adding category: {}", e);
             }
         }
     });
@@ -269,5 +264,5 @@ fn show_add_category_dialog(
         add_btn_clone.emit_clicked();
     });
 
-    dialog.present();
+    popover.popup();
 }

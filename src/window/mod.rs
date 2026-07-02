@@ -30,6 +30,7 @@ impl MainWindow {
 
     pub fn populate_apps(&self, db: &Rc<AppsDb>) {
         let current_category: Rc<RefCell<String>> = Rc::new(RefCell::new("All".to_string()));
+        *self.imp().current_category.borrow_mut() = Some(current_category.clone());
 
         background::load_saved(self);
         self.setup_escape_close();
@@ -39,6 +40,10 @@ impl MainWindow {
         categories::populate(self, db, current_category.clone());
         self.setup_filter(current_category, db.clone());
         self.setup_settings_button();
+    }
+
+    pub fn current_category(&self) -> Rc<RefCell<String>> {
+        self.imp().current_category.borrow().clone().expect("current_category not initialized")
     }
 
     fn setup_escape_close(&self) {
@@ -55,8 +60,23 @@ impl MainWindow {
         });
 
         self.add_controller(controller);
-    }
 
+        // дублируем на search_entry на случай, если он перехватывает фокус
+        let imp = self.imp();
+        let search_controller = gtk4::EventControllerKey::new();
+        let window_for_search = self.clone();
+
+        search_controller.connect_key_pressed(move |_, key, _, _| {
+            if key == gtk4::gdk::Key::Escape {
+                window_for_search.close();
+                gtk4::glib::Propagation::Stop
+            } else {
+                gtk4::glib::Propagation::Proceed
+            }
+    });
+
+    imp.search_entry.add_controller(search_controller);
+    }
     pub fn rebuild_apps(&self, db: &Rc<AppsDb>) {
         let imp = self.imp();
 

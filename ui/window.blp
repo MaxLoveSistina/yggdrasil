@@ -2,18 +2,16 @@ using Gtk 4.0;
 
 template $MainWindow : Window {
   title: "Yggdrasil";
-  default-width: 700;
-  default-height: 550;
+  default-width: 1000;
+  default-height: 700;
 
   Overlay {
-    // Основной child — фон, он всегда самый нижний слой
     Picture background_picture {
       content-fit: cover;
       can-shrink: true;
       can-target: false;
     }
 
-    // overlay 1 — затемнение поверх фона
     [overlay]
     Box dim_overlay {
       can-target: false;
@@ -21,82 +19,67 @@ template $MainWindow : Window {
       styles ["dim-overlay"]
     }
 
-    // overlay 2 — весь интерфейс, самый верхний слой
     [overlay]
     Box {
       orientation: vertical;
-      spacing: 8;
-      margin-top: 12;
-      margin-bottom: 12;
-      margin-start: 12;
-      margin-end: 12;
-
-      ScrolledWindow {
-        hscrollbar-policy: automatic;
-        vscrollbar-policy: never;
-        height-request: 64;
-
-        Box pinned_panel {
-          orientation: horizontal;
-          spacing: 8;
-        }
-      }
-
-      Separator {}
-
-      Box {
-      orientation: horizontal;
-      halign: center;
-      spacing: 10;
-      margin-top: 4;
-      margin-bottom: 4;
+      spacing: 12;
+      margin-top: 16;
+      margin-bottom: 16;
+      margin-start: 16;
+      margin-end: 16;
+      hexpand: true;
+      vexpand: true;
 
       SearchEntry search_entry {
-        width-request: 460;
-        placeholder-text: "Поиск приложений...";
+        width-request: 320;
+        halign: start;
+        placeholder-text: "Search apps...";
       }
 
-      Button settings_button {
-        icon-name: "open-menu-symbolic";
-        width-request: 38;
-        height-request: 38;
-
-        styles ["flat"]
+      Box categories_bar {
+        orientation: horizontal;
+        spacing: 6;
+        halign: center;
+        height-request: 40;
       }
-    }
 
       ScrolledWindow {
         vexpand: true;
+        hexpand: true;
         hscrollbar-policy: never;
 
         FlowBox app_grid {
           valign: start;
-          halign: fill;
+          halign: center;
+          margin-top: 8;
           max-children-per-line: 10;
           min-children-per-line: 5;
-          row-spacing: 8;
-          column-spacing: 8;
-          margin-top: 8;
-          margin-bottom: 8;
-          margin-start: 4;
-          margin-end: 4;
+          row-spacing: 10;
+          column-spacing: 10;
           homogeneous: true;
           selection-mode: none;
         }
       }
 
-      Separator {}
-
-      ScrolledWindow {
-        hscrollbar-policy: automatic;
-        vscrollbar-policy: never;
-        height-request: 44;
-
-        Box categories_bar {
-          orientation: horizontal;
-          spacing: 6;
-        }
+      Box pinned_panel {
+        orientation: horizontal;
+        spacing: 8;
+        halign: center;
+        height-request: 64;
       }
+    }
+
+    [overlay]
+    Button settings_button {
+      icon-name: "open-menu-symbolic";
+      width-request: 36;
+      height-request: 36;
+      halign: end;
+      valign: start;
+      margin-top: 16;
+      margin-end: 16;
+
+      styles ["flat"]
     }
   }
 }

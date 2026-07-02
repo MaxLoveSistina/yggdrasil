@@ -47,9 +47,12 @@ fn build_pinned_icon(app: &gio::AppInfo, app_id: &str, db: &Rc<AppsDb>, window: 
 
     // левый клик — запуск
     let app_clone = app.clone();
+    let window_clone = window.clone();
     button.connect_clicked(move |_| {
         if let Err(e) = app_clone.launch(&[], gio::AppLaunchContext::NONE) {
             eprintln!("Не удалось запустить приложение: {}", e);
+        } else {
+            window_clone.close();
         }
     });
 
