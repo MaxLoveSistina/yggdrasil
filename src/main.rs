@@ -3,7 +3,6 @@ mod apps_db;
 
 use gtk4::prelude::*;
 use gtk4::Application;
-use gtk4_layer_shell::{LayerShell, Layer, KeyboardMode, Edge};
 use std::rc::Rc;
 
 const APP_ID: &str = "com.example.MainLauncher";
@@ -22,14 +21,7 @@ fn build_ui(app: &Application) {
 
     let window = window::MainWindow::new(app);
 
-    window.init_layer_shell();
-    window.set_layer(Layer::Overlay);
-    window.set_keyboard_mode(KeyboardMode::OnDemand);
-    window.set_anchor(Edge::Top, true);
-    window.set_anchor(Edge::Bottom, true);
-    window.set_anchor(Edge::Left, true);
-    window.set_anchor(Edge::Right, true);
-    window.set_exclusive_zone(-1);
+    window.fullscreen();
 
     window.populate_apps(&db);
     window.present();

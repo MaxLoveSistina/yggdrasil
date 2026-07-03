@@ -4,7 +4,6 @@ pub mod categories;
 mod pinned;
 mod add_to_category;
 mod background;
-mod dialog_utils;
 
 use gtk4::prelude::*;
 use gtk4::glib;
@@ -158,3 +157,6 @@ impl MainWindow {
         });
     }
 }
+
+
+

@@ -50,13 +50,13 @@ pub fn show_menu(button: &gtk4::Button, window: &MainWindow) {
 fn show_picker(window: &MainWindow) {
     let filter = gtk4::FileFilter::new();
     filter.add_mime_type("image/*");
-    filter.set_name(Some("Изображения"));
+    filter.set_name(Some("Images"));
 
     let filters = gtk4::gio::ListStore::new::<gtk4::FileFilter>();
     filters.append(&filter);
 
     let dialog = gtk4::FileDialog::builder()
-        .title("Выберите фоновое изображение")
+        .title("Select background image")
         .filters(&filters)
         .build();
 
@@ -65,8 +65,8 @@ fn show_picker(window: &MainWindow) {
         if let Ok(file) = result {
             if let Some(source_path) = file.path() {
                 match copy_and_apply(&window_clone, &source_path) {
-                    Ok(_) => println!("Фон установлен и сохранён: {}", background_path().display()),
-                    Err(e) => eprintln!("Ошибка установки фона: {}", e),
+                    Ok(_) => println!("Background set and saved: {}", background_path().display()),
+                    Err(e) => eprintln!("Error setting background: {}", e),
                 }
             }
         }
