@@ -98,4 +98,15 @@ impl AppsDb {
         queries::rename_category(&self.conn, old_name, new_name)
     }
 
+    pub fn add_manual_app(&self, desktop_id: &str, app_dir: &str, extra_paths: &str) -> rusqlite::Result<()> {
+        queries::add_manual_app(&self.conn, desktop_id, app_dir, extra_paths)
+    }
+
+    pub fn get_manual_app(&self, desktop_id: &str) -> Option<(String, String)> {
+        queries::get_manual_app(&self.conn, desktop_id)
+    }
+
+    pub fn remove_manual_app_record(&self, desktop_id: &str) -> rusqlite::Result<()> {
+        queries::remove_manual_app_record(&self.conn, desktop_id)
+    }
 }

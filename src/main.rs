@@ -49,22 +49,31 @@ fn load_css() {
     );
 }
 
-/// Ищет style.css рядом с исполняемым файлом, а если не найден — в текущей директории (для cargo run)
+/// Ищет style.css в порядке приоритета:
+/// 1. src/resources/ рядом с бинарником (пользовательский)
+/// 2. resources/ рядом с бинарником (дефолтный)
+/// 3. resources/ в текущей директории (для cargo run)
 fn find_css_path() -> Option<std::path::PathBuf> {
-    // 1. рядом с самим бинарником (для релизного запуска откуда угодно)
+    // 1. Пользовательский CSS в src/resources/ рядом с бинарником
     if let Ok(exe_path) = std::env::current_exe() {
         if let Some(exe_dir) = exe_path.parent() {
-            let candidate = exe_dir.join("resources/style.css");
-            if candidate.exists() {
-                return Some(candidate);
+            let user_css = exe_dir.join("src/resources/style.css");
+            if user_css.exists() {
+                return Some(user_css);
+            }
+            
+            // 2. Дефолтный CSS в resources/ рядом с бинарником
+            let default_css = exe_dir.join("resources/style.css");
+            if default_css.exists() {
+                return Some(default_css);
             }
         }
     }
 
-    // 2. текущая рабочая директория (удобно при cargo run во время разработки)
-    let cwd_candidate = std::path::PathBuf::from("resources/style.css");
-    if cwd_candidate.exists() {
-        return Some(cwd_candidate);
+    // 3. Для разработки (cargo run) - ищем в текущей директории
+    let cwd_css = std::path::PathBuf::from("resources/style.css");
+    if cwd_css.exists() {
+        return Some(cwd_css);
     }
 
     None

@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 #[derive(CompositeTemplate, Default)]
-#[template(file = "../../ui/window.ui")]
+#[template(file = "../../resources/window.ui")]
 pub struct MainWindow {
     #[template_child]
     pub search_entry: TemplateChild<SearchEntry>,

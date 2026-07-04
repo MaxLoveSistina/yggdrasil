@@ -4,6 +4,8 @@ pub mod categories;
 mod pinned;
 mod add_to_category;
 mod background;
+mod add_application;
+mod uninstall;
 
 use gtk4::prelude::*;
 use gtk4::glib;
@@ -38,7 +40,7 @@ impl MainWindow {
         self.rebuild_pinned(db);
         categories::populate(self, db, current_category.clone());
         self.setup_filter(current_category, db.clone());
-        self.setup_settings_button();
+        self.setup_settings_button(db);
     }
 
     pub fn current_category(&self) -> Rc<RefCell<String>> {
@@ -147,13 +149,14 @@ impl MainWindow {
         });
     }
 
-    fn setup_settings_button(&self) {
+    fn setup_settings_button(&self, db: &Rc<AppsDb>) {
         let imp = self.imp();
         let button = imp.settings_button.clone();
         let window_clone = self.clone();
+        let db_clone = db.clone();
 
         imp.settings_button.connect_clicked(move |_| {
-            background::show_menu(&button, &window_clone);
+            background::show_menu(&button, &window_clone, db_clone.clone());
         });
     }
 }

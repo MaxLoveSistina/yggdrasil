@@ -15,7 +15,7 @@ pub fn create_schema(conn: &Connection) -> rusqlite::Result<()> {
 
     create_categories_table(conn)?;
     create_app_categories_table(conn)?;
-
+    create_manual_apps_table(conn)?;
     Ok(())
 }
 
@@ -285,4 +285,43 @@ pub fn rename_category(conn: &Connection, old_name: &str, new_name: &str) -> rus
     )?;
 
     Ok(changed > 0)
+}
+
+pub fn create_manual_apps_table(conn: &Connection) -> rusqlite::Result<()> {
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS manual_apps (
+            desktop_id   TEXT PRIMARY KEY,
+            app_dir      TEXT NOT NULL,
+            extra_paths  TEXT NOT NULL DEFAULT ''
+        )",
+        (),
+    )?;
+    Ok(())
+}
+
+pub fn add_manual_app(
+    conn: &Connection,
+    desktop_id: &str,
+    app_dir: &str,
+    extra_paths: &str,
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "INSERT OR REPLACE INTO manual_apps (desktop_id, app_dir, extra_paths) VALUES (?1, ?2, ?3)",
+        (desktop_id, app_dir, extra_paths),
+    )?;
+    Ok(())
+}
+
+pub fn get_manual_app(conn: &Connection, desktop_id: &str) -> Option<(String, String)> {
+    conn.query_row(
+        "SELECT app_dir, extra_paths FROM manual_apps WHERE desktop_id = ?1",
+        [desktop_id],
+        |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
+    )
+    .ok()
+}
+
+pub fn remove_manual_app_record(conn: &Connection, desktop_id: &str) -> rusqlite::Result<()> {
+    conn.execute("DELETE FROM manual_apps WHERE desktop_id = ?1", [desktop_id])?;
+    Ok(())
 }

@@ -61,8 +61,8 @@ fn attach_category_menu(
     current_category: Rc<RefCell<String>>,
 ) {
     let menu_model = gio::Menu::new();
-    menu_model.append(Some("Переименовать"), Some("category.rename"));
-    menu_model.append(Some("Удалить"), Some("category.delete"));
+    menu_model.append(Some("Rename"), Some("category.rename"));
+    menu_model.append(Some("Delete"), Some("category.delete"));
 
     let popover = gtk4::PopoverMenu::from_model(Some(&menu_model));
     popover.set_parent(btn);
